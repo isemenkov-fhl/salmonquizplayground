@@ -104,10 +104,34 @@
     display: none;
     flex: 1;
     flex-direction: column;
-    padding: 0 20px 32px;
+    min-height: 0;
+    padding: 0;
     animation: slideIn 0.35s cubic-bezier(.4,0,.2,1);
   }
   .screen.active { display: flex; }
+  .screen-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0 20px 24px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .screen-footer {
+    flex-shrink: 0;
+    padding: 12px 20px 24px;
+    padding-bottom: max(24px, env(safe-area-inset-bottom, 24px));
+    background: #fff;
+    border-top: 1px solid var(--border);
+  }
+  .screen-footer .btn { margin-top: 0; }
+  /* Screens without a footer (calculating, result) keep inner padding */
+  .screen:not(.has-footer) { padding: 0 20px 32px; }
+  .screen:not(.has-footer) .screen-content { padding: 0; }
+  .screen.has-footer .screen-content { padding-bottom: 16px; }
+  /* Phone screen: toggle which footer button is visible */
+  .screen-footer .footer-btn-otp { display: none; }
+  .screen-footer.show-otp .footer-btn-phone { display: none; }
+  .screen-footer.show-otp .footer-btn-otp { display: block; }
   @keyframes slideIn {
     from { opacity:0; transform: translateX(30px); }
     to { opacity:1; transform: translateX(0); }
@@ -495,7 +519,6 @@
     font-size: 16px; font-weight: 700; cursor: pointer;
     transition: all 0.2s; letter-spacing: 0.2px;
     box-shadow: 0 4px 20px rgba(255,107,74,0.3);
-    margin-top: auto;
   }
   .btn:hover { transform: translateY(-1px); box-shadow: 0 6px 28px rgba(255,107,74,0.4); }
   .btn:active { transform: translateY(0); }
@@ -507,6 +530,59 @@
   .btn-outline:hover { background: var(--salmon-pale); box-shadow: none; }
 
   .spacer { flex: 1; min-height: 16px; }
+
+  /* ========== HOME SCREEN (quiz picker) ========== */
+  .screen-home .screen-content { padding: 0 20px 24px; display: flex; flex-direction: column; align-items: stretch; }
+  .home-hero {
+    margin: 0 -20px;
+    background: linear-gradient(135deg, #1A1A2E 0%, #16213E 50%, #0F3460 100%);
+    padding: 36px 24px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+  .home-hero::before {
+    content: '';
+    position: absolute; top: -60px; right: -40px;
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, rgba(255,107,74,0.25) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .home-hero h1 {
+    font-size: 26px; font-weight: 800; color: white; line-height: 1.2;
+    margin-bottom: 8px; position: relative; z-index: 1;
+  }
+  .home-hero h1 span { color: var(--salmon); }
+  .home-hero p {
+    color: rgba(255,255,255,0.7); font-size: 14px; line-height: 1.5;
+    position: relative; z-index: 1;
+  }
+  .quiz-choices { display: flex; flex-direction: column; gap: 14px; margin-top: 24px; }
+  .quiz-choice {
+    display: flex; align-items: center; gap: 16px;
+    padding: 20px 18px;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+  }
+  .quiz-choice:hover { border-color: var(--salmon-light); background: var(--salmon-pale); box-shadow: 0 4px 20px rgba(255,107,74,0.12); }
+  .quiz-choice:active { transform: scale(0.98); }
+  .quiz-choice-icon {
+    width: 52px; height: 52px;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    flex-shrink: 0;
+  }
+  .quiz-choice-icon.salmon { background: linear-gradient(135deg, var(--salmon), var(--salmon-light)); }
+  .quiz-choice-icon.coral { background: linear-gradient(135deg, #F15961, #FF7F85); }
+  .quiz-choice-text h3 { font-size: 17px; font-weight: 800; color: var(--dark); margin-bottom: 2px; }
+  .quiz-choice-text p { font-size: 13px; color: var(--muted); }
+  .app.show-home .header .progress-wrap { display: none !important; }
+  .screen-home { padding: 0; }
+  .screen-home.has-footer .screen-content { padding-bottom: 16px; }
 
   /* SCROLLABLE content for long screens */
   .scroll-content { overflow-y: auto; flex: 1; }
@@ -521,14 +597,69 @@
   .fade-in-3 { animation: fadeInUp 0.5s 0.2s ease both; }
   .fade-in-4 { animation: fadeInUp 0.5s 0.3s ease both; }
 
-  @media (min-width: 600px) {
-    body { padding: 24px; align-items: center; min-height: 100vh; }
-    .app { border-radius: 28px; box-shadow: 0 24px 80px rgba(0,0,0,0.15); max-height: 860px; height: 860px; }
+  /* ========== MOBILE (default): full viewport, sticky bottom button ========== */
+  @media (max-width: 767px) {
+    .app { max-width: 100%; min-height: 100vh; min-height: 100dvh; }
+    .screen-footer { position: sticky; bottom: 0; z-index: 5; }
   }
+
+  /* ========== DESKTOP / PC: card layout, larger typography, different spacing ========== */
+  @media (min-width: 768px) {
+    body {
+      padding: 32px 24px;
+      align-items: center;
+      min-height: 100vh;
+      background: linear-gradient(180deg, #1A1A2E 0%, #16213E 30%, #F7F7FA 30%);
+    }
+    .app {
+      max-width: 520px;
+      width: 100%;
+      min-height: 640px;
+      max-height: 90vh;
+      height: auto;
+      border-radius: 24px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.2), 0 0 0 1px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    .header { padding: 20px 28px 16px; }
+    .screen-content { padding: 0 28px 24px; }
+    .screen-footer {
+      padding: 16px 28px 28px;
+      border-top-color: var(--border);
+    }
+    .q-title { font-size: 24px; }
+    .q-micro { font-size: 14px; }
+    .option, .option-card { padding: 16px 20px; }
+    .option-text { font-size: 16px; }
+    .option-card .card-title { font-size: 15px; }
+    .btn { padding: 18px; font-size: 17px; border-radius: 16px; }
+    .start-hero h1 { font-size: 30px; }
+    .start-hero p { font-size: 16px; }
+    .midpoint h2 { font-size: 26px; }
+    .options-grid { gap: 12px; }
+    .style-cards { gap: 12px; }
+    .style-card { height: 110px; }
+    .screen-content .start-hero,
+    .phone-top { margin-left: -28px; margin-right: -28px; }
+    #screen-result { padding-left: 28px; padding-right: 28px; }
+    #screen-result .result-top { margin-left: -28px; margin-right: -28px; }
+  }
+
+  /* ========== QUIZ 2 (New style): coral/teal theme ========== */
+  .app.quiz2-active {
+    --salmon: #F15961;
+    --salmon-light: #FF7F85;
+    --salmon-pale: #FFF0F0;
+  }
+  .app.quiz2-active .quiz2 .start-hero::before { background: radial-gradient(circle, rgba(241,89,97,.35) 0%, transparent 70%); }
+  .app.quiz2-active .quiz2 .start-hero::after { background: radial-gradient(circle, rgba(107,200,198,.25) 0%, transparent 70%); }
+  .app.quiz2-active .quiz2 .feature-chip { background: linear-gradient(135deg,#EDF9F9,#E8F8F8); border: 1px solid rgba(107,200,198,.2); }
+  .app.quiz2-active .btn-teal { background: linear-gradient(135deg,#6BC8C6,#8DD8D6); box-shadow: 0 4px 18px rgba(107,200,198,.35); }
+  .app.quiz2-active .btn-teal:hover { box-shadow: 0 6px 24px rgba(107,200,198,.45); }
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app show-home" id="app" data-quiz="">
 
   <!-- HEADER -->
   <div class="header" id="header">
@@ -537,274 +668,356 @@
       <span>Salmon</span>
     </div>
     <div class="progress-wrap" id="progressWrap" style="display:none">
-      <button class="back-btn" onclick="goBack()" id="backBtn">←</button>
+      <button class="back-btn" onclick="document.getElementById('app').classList.contains('quiz2-active') ? goBackV2() : goBack();" id="backBtn">←</button>
       <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
       <span class="progress-text" id="progressText">0 / 11</span>
     </div>
   </div>
 
-  <!-- ===== SCREEN: START ===== -->
-  <div class="screen active" id="screen-start">
-    <div class="start-hero">
-      <div class="start-badge">⚡ Takes only 60 seconds</div>
-      <h1>Discover your<br><span>Credit Score</span><br>for free</h1>
-      <p>Answer a few quick questions and we'll give you a personalized credit assessment.</p>
-      <div class="score-preview">
-        <div class="score-circle">
-          <div class="score-circle-inner">?</div>
+  <!-- ===== HOME: Choose quiz ===== -->
+  <div class="screen screen-home active has-footer" id="screen-home">
+    <div class="screen-content">
+      <div class="home-hero">
+        <h1>Salmon <span>Quizzes</span></h1>
+        <p>Choose a quiz to discover your credit score or explore your financial profile.</p>
+      </div>
+      <div class="quiz-choices">
+        <div class="quiz-choice" onclick="startQuiz1()" role="button" tabindex="0">
+          <div class="quiz-choice-icon salmon">🐟</div>
+          <div class="quiz-choice-text">
+            <h3>Credit Score — Classic</h3>
+            <p>Original style · 11 questions · ~60 sec</p>
+          </div>
         </div>
-        <div class="score-preview-text">
-          <h3>Your score is waiting</h3>
-          <p>Based on your answers, not a hard check</p>
+        <div class="quiz-choice" onclick="startQuiz2()" role="button" tabindex="0">
+          <div class="quiz-choice-icon coral">📊</div>
+          <div class="quiz-choice-text">
+            <h3>Credit Score — New style</h3>
+            <p>Coral & teal theme · 11 questions · ~60 sec</p>
+          </div>
         </div>
       </div>
+      <div class="spacer"></div>
     </div>
-    <div class="features-row">
-      <div class="feature-chip"><div class="icon">🔒</div><p>No hard check</p></div>
-      <div class="feature-chip"><div class="icon">🎯</div><p>Personalized result</p></div>
-      <div class="feature-chip"><div class="icon">📈</div><p>Improve tips</p></div>
+    <div class="screen-footer" style="border-top: none;">
+      <!-- No button; choices are the CTAs -->
     </div>
-    <div class="timer-badge">⏱ Most people finish in 60 sec</div>
-    <div class="spacer"></div>
-    <button class="btn" onclick="startQuiz()">Let's find out my score →</button>
+  </div>
+
+  <!-- ===== QUIZ 1: SCREEN START ===== -->
+  <div class="screen has-footer quiz1" id="screen-start" style="display:none;">
+    <div class="screen-content">
+      <div class="start-hero">
+        <div class="start-badge">⚡ Takes only 60 seconds</div>
+        <h1>Discover your<br><span>Credit Score</span><br>for free</h1>
+        <p>Answer a few quick questions and we'll give you a personalized credit assessment.</p>
+        <div class="score-preview">
+          <div class="score-circle">
+            <div class="score-circle-inner">?</div>
+          </div>
+          <div class="score-preview-text">
+            <h3>Your score is waiting</h3>
+            <p>Based on your answers, not a hard check</p>
+          </div>
+        </div>
+      </div>
+      <div class="features-row">
+        <div class="feature-chip"><div class="icon">🔒</div><p>No hard check</p></div>
+        <div class="feature-chip"><div class="icon">🎯</div><p>Personalized result</p></div>
+        <div class="feature-chip"><div class="icon">📈</div><p>Improve tips</p></div>
+      </div>
+      <div class="timer-badge">⏱ Most people finish in 60 sec</div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" onclick="startQuiz()">Let's find out my score →</button>
+    </div>
   </div>
 
   <!-- ===== Q1: Character ===== -->
-  <div class="screen" id="screen-q1">
-    <div class="q-label">Question 1 of 11 — Just for fun</div>
-    <div class="q-title">Which character feels most like you?</div>
-    <div class="q-micro">No right or wrong — this helps us personalize your result ✨</div>
-    <div class="options-grid">
-      <div class="option-card" onclick="selectGridOption(this, 'q1', 'planner')">
-        <div class="big-emoji">🧠</div>
-        <div class="card-title">The Planner</div>
-        <div class="card-sub">Control & planning ahead</div>
+  <div class="screen has-footer quiz1" id="screen-q1">
+    <div class="screen-content">
+      <div class="q-label">Question 1 of 11 — Just for fun</div>
+      <div class="q-title">Which character feels most like you?</div>
+      <div class="q-micro">No right or wrong — this helps us personalize your result ✨</div>
+      <div class="options-grid">
+        <div class="option-card" onclick="selectGridOption(this, 'q1', 'planner')">
+          <div class="big-emoji">🧠</div>
+          <div class="card-title">The Planner</div>
+          <div class="card-sub">Control & planning ahead</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this, 'q1', 'hustler')">
+          <div class="big-emoji">⚡</div>
+          <div class="card-title">The Hustler</div>
+          <div class="card-sub">Always on the move</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this, 'q1', 'builder')">
+          <div class="big-emoji">🌱</div>
+          <div class="card-title">The Builder</div>
+          <div class="card-sub">Steady growth</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this, 'q1', 'enjoyer')">
+          <div class="big-emoji">🎉</div>
+          <div class="card-title">The Enjoyer</div>
+          <div class="card-sub">Live in the moment</div>
+        </div>
       </div>
-      <div class="option-card" onclick="selectGridOption(this, 'q1', 'hustler')">
-        <div class="big-emoji">⚡</div>
-        <div class="card-title">The Hustler</div>
-        <div class="card-sub">Always on the move</div>
-      </div>
-      <div class="option-card" onclick="selectGridOption(this, 'q1', 'builder')">
-        <div class="big-emoji">🌱</div>
-        <div class="card-title">The Builder</div>
-        <div class="card-sub">Steady growth</div>
-      </div>
-      <div class="option-card" onclick="selectGridOption(this, 'q1', 'enjoyer')">
-        <div class="big-emoji">🎉</div>
-        <div class="card-title">The Enjoyer</div>
-        <div class="card-sub">Live in the moment</div>
-      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q1" disabled onclick="nextScreen('q2')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q1" disabled onclick="nextScreen('q2')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q2: Card Style ===== -->
-  <div class="screen" id="screen-q2">
-    <div class="q-label">Question 2 of 11</div>
-    <div class="q-title">Pick a card style you like</div>
-    <div class="q-micro">We'll personalize your experience based on this 🎨</div>
-    <div class="style-cards">
-      <div class="style-card sc-minimal" onclick="selectStyle(this,'q2','minimal')">
-        <span class="sc-label">Minimal & Clean</span>
+  <div class="screen has-footer quiz1" id="screen-q2">
+    <div class="screen-content">
+      <div class="q-label">Question 2 of 11</div>
+      <div class="q-title">Pick a card style you like</div>
+      <div class="q-micro">We'll personalize your experience based on this 🎨</div>
+      <div class="style-cards">
+        <div class="style-card sc-minimal" onclick="selectStyle(this,'q2','minimal')">
+          <span class="sc-label">Minimal & Clean</span>
+        </div>
+        <div class="style-card sc-bold" onclick="selectStyle(this,'q2','bold')">
+          <span class="sc-label">Bold & Colorful</span>
+        </div>
+        <div class="style-card sc-dark" onclick="selectStyle(this,'q2','dark')">
+          <span class="sc-label">Dark & Premium</span>
+        </div>
+        <div class="style-card sc-friendly" onclick="selectStyle(this,'q2','friendly')">
+          <span class="sc-label">Friendly & Playful</span>
+        </div>
       </div>
-      <div class="style-card sc-bold" onclick="selectStyle(this,'q2','bold')">
-        <span class="sc-label">Bold & Colorful</span>
-      </div>
-      <div class="style-card sc-dark" onclick="selectStyle(this,'q2','dark')">
-        <span class="sc-label">Dark & Premium</span>
-      </div>
-      <div class="style-card sc-friendly" onclick="selectStyle(this,'q2','friendly')">
-        <span class="sc-label">Friendly & Playful</span>
-      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q2" disabled onclick="nextScreen('q3')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q2" disabled onclick="nextScreen('q3')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q3: Income Frequency ===== -->
-  <div class="screen" id="screen-q3">
-    <div class="q-label">Question 3 of 11</div>
-    <div class="q-title">How often do you receive your income?</div>
-    <div class="q-micro">This helps us understand your cash flow 💸</div>
-    <div class="options" id="opts-q3">
-      <div class="option" onclick="selectOption(this,'q3',5)"><span class="option-emoji">📅</span><div><div class="option-text">Weekly</div></div></div>
-      <div class="option" onclick="selectOption(this,'q3',5)"><span class="option-emoji">📆</span><div><div class="option-text">Every two weeks</div></div></div>
-      <div class="option" onclick="selectOption(this,'q3',4)"><span class="option-emoji">🗓️</span><div><div class="option-text">Twice a month</div></div></div>
-      <div class="option" onclick="selectOption(this,'q3',3)"><span class="option-emoji">📑</span><div><div class="option-text">Monthly</div></div></div>
-      <div class="option" onclick="selectOption(this,'q3',1)"><span class="option-emoji">🎲</span><div><div class="option-text">Irregular / freelance</div></div></div>
+  <div class="screen has-footer quiz1" id="screen-q3">
+    <div class="screen-content">
+      <div class="q-label">Question 3 of 11</div>
+      <div class="q-title">How often do you receive your income?</div>
+      <div class="q-micro">This helps us understand your cash flow 💸</div>
+      <div class="options" id="opts-q3">
+        <div class="option" onclick="selectOption(this,'q3',5)"><span class="option-emoji">📅</span><div><div class="option-text">Weekly</div></div></div>
+        <div class="option" onclick="selectOption(this,'q3',5)"><span class="option-emoji">📆</span><div><div class="option-text">Every two weeks</div></div></div>
+        <div class="option" onclick="selectOption(this,'q3',4)"><span class="option-emoji">🗓️</span><div><div class="option-text">Twice a month</div></div></div>
+        <div class="option" onclick="selectOption(this,'q3',3)"><span class="option-emoji">📑</span><div><div class="option-text">Monthly</div></div></div>
+        <div class="option" onclick="selectOption(this,'q3',1)"><span class="option-emoji">🎲</span><div><div class="option-text">Irregular / freelance</div></div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q3" disabled onclick="nextScreen('q4')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q3" disabled onclick="nextScreen('q4')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q4: Dependents ===== -->
-  <div class="screen" id="screen-q4">
-    <div class="q-label">Question 4 of 11</div>
-    <div class="q-title">How many people depend on your income?</div>
-    <div class="q-micro">Including yourself</div>
-    <div class="options" id="opts-q4">
-      <div class="option" onclick="selectOption(this,'q4',5)"><span class="option-emoji">🧍</span><div><div class="option-text">Just me</div></div></div>
-      <div class="option" onclick="selectOption(this,'q4',4)"><span class="option-emoji">👨‍👩‍👦</span><div><div class="option-text">2–3 people</div></div></div>
-      <div class="option" onclick="selectOption(this,'q4',3)"><span class="option-emoji">👨‍👩‍👧‍👦</span><div><div class="option-text">4–5 people</div></div></div>
-      <div class="option" onclick="selectOption(this,'q4',2)"><span class="option-emoji">🏘️</span><div><div class="option-text">6 or more</div></div></div>
+  <div class="screen has-footer quiz1" id="screen-q4">
+    <div class="screen-content">
+      <div class="q-label">Question 4 of 11</div>
+      <div class="q-title">How many people depend on your income?</div>
+      <div class="q-micro">Including yourself</div>
+      <div class="options" id="opts-q4">
+        <div class="option" onclick="selectOption(this,'q4',5)"><span class="option-emoji">🧍</span><div><div class="option-text">Just me</div></div></div>
+        <div class="option" onclick="selectOption(this,'q4',4)"><span class="option-emoji">👨‍👩‍👦</span><div><div class="option-text">2–3 people</div></div></div>
+        <div class="option" onclick="selectOption(this,'q4',3)"><span class="option-emoji">👨‍👩‍👧‍👦</span><div><div class="option-text">4–5 people</div></div></div>
+        <div class="option" onclick="selectOption(this,'q4',2)"><span class="option-emoji">🏘️</span><div><div class="option-text">6 or more</div></div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q4" disabled onclick="nextScreen('q5')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q4" disabled onclick="nextScreen('q5')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q5: Income ===== -->
-  <div class="screen" id="screen-q5">
-    <div class="q-label">Question 5 of 11</div>
-    <div class="q-title">What's your average monthly income?</div>
-    <div class="q-micro">An estimate is totally fine 😊</div>
-    <div class="options" id="opts-q5">
-      <div class="option" onclick="selectOption(this,'q5',1)"><span class="option-emoji">💰</span><div><div class="option-text">Less than ₱10,000</div></div></div>
-      <div class="option" onclick="selectOption(this,'q5',2)"><span class="option-emoji">💰</span><div><div class="option-text">₱10,000 – 20,000</div></div></div>
-      <div class="option" onclick="selectOption(this,'q5',3)"><span class="option-emoji">💰</span><div><div class="option-text">₱20,000 – 40,000</div></div></div>
-      <div class="option" onclick="selectOption(this,'q5',4)"><span class="option-emoji">💰</span><div><div class="option-text">₱40,000 – 80,000</div></div></div>
-      <div class="option" onclick="selectOption(this,'q5',5)"><span class="option-emoji">💰</span><div><div class="option-text">More than ₱80,000</div></div></div>
-      <div class="option" onclick="selectOption(this,'q5',2)"><span class="option-emoji">🤐</span><div><div class="option-text">Prefer not to say</div></div></div>
+  <div class="screen has-footer quiz1" id="screen-q5">
+    <div class="screen-content">
+      <div class="q-label">Question 5 of 11</div>
+      <div class="q-title">What's your average monthly income?</div>
+      <div class="q-micro">An estimate is totally fine 😊</div>
+      <div class="options" id="opts-q5">
+        <div class="option" onclick="selectOption(this,'q5',1)"><span class="option-emoji">💰</span><div><div class="option-text">Less than ₱10,000</div></div></div>
+        <div class="option" onclick="selectOption(this,'q5',2)"><span class="option-emoji">💰</span><div><div class="option-text">₱10,000 – 20,000</div></div></div>
+        <div class="option" onclick="selectOption(this,'q5',3)"><span class="option-emoji">💰</span><div><div class="option-text">₱20,000 – 40,000</div></div></div>
+        <div class="option" onclick="selectOption(this,'q5',4)"><span class="option-emoji">💰</span><div><div class="option-text">₱40,000 – 80,000</div></div></div>
+        <div class="option" onclick="selectOption(this,'q5',5)"><span class="option-emoji">💰</span><div><div class="option-text">More than ₱80,000</div></div></div>
+        <div class="option" onclick="selectOption(this,'q5',2)"><span class="option-emoji">🤐</span><div><div class="option-text">Prefer not to say</div></div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q5" disabled onclick="nextScreen('mid')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q5" disabled onclick="nextScreen('mid')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== MIDPOINT ===== -->
-  <div class="screen" id="screen-mid">
-    <div class="midpoint">
-      <div class="midpoint-icon">🎯</div>
-      <h2 class="fade-in">You're halfway there!</h2>
-      <p class="fade-in-2">Great answers so far. Just a few more questions and we'll have your personalized credit score ready.</p>
-      <div class="stat-row fade-in-3">
-        <div class="stat-chip"><div class="num">5</div><div class="lbl">Questions done</div></div>
-        <div class="stat-chip"><div class="num">~30s</div><div class="lbl">Left to go</div></div>
-        <div class="stat-chip"><div class="num">100%</div><div class="lbl">Free & safe</div></div>
+  <div class="screen has-footer quiz1" id="screen-mid">
+    <div class="screen-content">
+      <div class="midpoint">
+        <div class="midpoint-icon">🎯</div>
+        <h2 class="fade-in">You're halfway there!</h2>
+        <p class="fade-in-2">Great answers so far. Just a few more questions and we'll have your personalized credit score ready.</p>
+        <div class="stat-row fade-in-3">
+          <div class="stat-chip"><div class="num">5</div><div class="lbl">Questions done</div></div>
+          <div class="stat-chip"><div class="num">~30s</div><div class="lbl">Left to go</div></div>
+          <div class="stat-chip"><div class="num">100%</div><div class="lbl">Free & safe</div></div>
+        </div>
       </div>
     </div>
-    <button class="btn fade-in-4" onclick="nextScreen('q6')">Keep going →</button>
+    <div class="screen-footer">
+      <button class="btn fade-in-4" onclick="nextScreen('q6')">Keep going →</button>
+    </div>
   </div>
 
   <!-- ===== Q6: Food Spending ===== -->
-  <div class="screen" id="screen-q6">
-    <div class="q-label">Question 6 of 11</div>
-    <div class="q-title">How much of your income goes to food?</div>
-    <div class="q-micro">Groceries + eating out combined 🍱</div>
-    <div class="options" id="opts-q6">
-      <div class="option" onclick="selectOption(this,'q6',5)"><span class="option-emoji">✅</span><div><div class="option-text">Less than 20%</div><div class="option-sub">Very lean on food</div></div></div>
-      <div class="option" onclick="selectOption(this,'q6',4)"><span class="option-emoji">👍</span><div><div class="option-text">20–35%</div><div class="option-sub">Healthy balance</div></div></div>
-      <div class="option" onclick="selectOption(this,'q6',2)"><span class="option-emoji">⚠️</span><div><div class="option-text">35–50%</div><div class="option-sub">Significant portion</div></div></div>
-      <div class="option" onclick="selectOption(this,'q6',1)"><span class="option-emoji">🔴</span><div><div class="option-text">More than 50%</div><div class="option-sub">Most income on food</div></div></div>
+  <div class="screen has-footer quiz1" id="screen-q6">
+    <div class="screen-content">
+      <div class="q-label">Question 6 of 11</div>
+      <div class="q-title">How much of your income goes to food?</div>
+      <div class="q-micro">Groceries + eating out combined 🍱</div>
+      <div class="options" id="opts-q6">
+        <div class="option" onclick="selectOption(this,'q6',5)"><span class="option-emoji">✅</span><div><div class="option-text">Less than 20%</div><div class="option-sub">Very lean on food</div></div></div>
+        <div class="option" onclick="selectOption(this,'q6',4)"><span class="option-emoji">👍</span><div><div class="option-text">20–35%</div><div class="option-sub">Healthy balance</div></div></div>
+        <div class="option" onclick="selectOption(this,'q6',2)"><span class="option-emoji">⚠️</span><div><div class="option-text">35–50%</div><div class="option-sub">Significant portion</div></div></div>
+        <div class="option" onclick="selectOption(this,'q6',1)"><span class="option-emoji">🔴</span><div><div class="option-text">More than 50%</div><div class="option-sub">Most income on food</div></div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q6" disabled onclick="nextScreen('q7')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q6" disabled onclick="nextScreen('q7')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q7: Credit Usage ===== -->
-  <div class="screen" id="screen-q7">
-    <div class="q-label">Question 7 of 11</div>
-    <div class="q-title">How often do you use credit products?</div>
-    <div class="q-micro">Credit cards, installments, buy now pay later 💳</div>
-    <div class="options" id="opts-q7">
-      <div class="option" onclick="selectOption(this,'q7',2)"><span class="option-emoji">🚫</span><div><div class="option-text">Never</div></div></div>
-      <div class="option" onclick="selectOption(this,'q7',3)"><span class="option-emoji">😴</span><div><div class="option-text">Rarely (once a year or less)</div></div></div>
-      <div class="option" onclick="selectOption(this,'q7',4)"><span class="option-emoji">📊</span><div><div class="option-text">Sometimes (a few times a year)</div></div></div>
-      <div class="option" onclick="selectOption(this,'q7',5)"><span class="option-emoji">🔄</span><div><div class="option-text">Often (almost every month)</div></div></div>
+  <div class="screen has-footer quiz1" id="screen-q7">
+    <div class="screen-content">
+      <div class="q-label">Question 7 of 11</div>
+      <div class="q-title">How often do you use credit products?</div>
+      <div class="q-micro">Credit cards, installments, buy now pay later 💳</div>
+      <div class="options" id="opts-q7">
+        <div class="option" onclick="selectOption(this,'q7',2)"><span class="option-emoji">🚫</span><div><div class="option-text">Never</div></div></div>
+        <div class="option" onclick="selectOption(this,'q7',3)"><span class="option-emoji">😴</span><div><div class="option-text">Rarely (once a year or less)</div></div></div>
+        <div class="option" onclick="selectOption(this,'q7',4)"><span class="option-emoji">📊</span><div><div class="option-text">Sometimes (a few times a year)</div></div></div>
+        <div class="option" onclick="selectOption(this,'q7',5)"><span class="option-emoji">🔄</span><div><div class="option-text">Often (almost every month)</div></div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q7" disabled onclick="nextScreen('q8')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q7" disabled onclick="nextScreen('q8')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q8: Bill Payment ===== -->
-  <div class="screen" id="screen-q8">
-    <div class="q-label">Question 8 of 11</div>
-    <div class="q-title">How often do you pay your bills on time?</div>
-    <div class="q-micro">Electricity, rent, loans, subscriptions ⚡</div>
-    <div class="options" id="opts-q8">
-      <div class="option" onclick="selectOption(this,'q8',5)"><span class="option-emoji">🌟</span><div><div class="option-text">Always</div></div></div>
-      <div class="option" onclick="selectOption(this,'q8',4)"><span class="option-emoji">👍</span><div><div class="option-text">Most of the time</div></div></div>
-      <div class="option" onclick="selectOption(this,'q8',2)"><span class="option-emoji">😅</span><div><div class="option-text">Sometimes late</div></div></div>
-      <div class="option" onclick="selectOption(this,'q8',1)"><span class="option-emoji">😬</span><div><div class="option-text">Often late</div></div></div>
+  <div class="screen has-footer quiz1" id="screen-q8">
+    <div class="screen-content">
+      <div class="q-label">Question 8 of 11</div>
+      <div class="q-title">How often do you pay your bills on time?</div>
+      <div class="q-micro">Electricity, rent, loans, subscriptions ⚡</div>
+      <div class="options" id="opts-q8">
+        <div class="option" onclick="selectOption(this,'q8',5)"><span class="option-emoji">🌟</span><div><div class="option-text">Always</div></div></div>
+        <div class="option" onclick="selectOption(this,'q8',4)"><span class="option-emoji">👍</span><div><div class="option-text">Most of the time</div></div></div>
+        <div class="option" onclick="selectOption(this,'q8',2)"><span class="option-emoji">😅</span><div><div class="option-text">Sometimes late</div></div></div>
+        <div class="option" onclick="selectOption(this,'q8',1)"><span class="option-emoji">😬</span><div><div class="option-text">Often late</div></div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q8" disabled onclick="nextScreen('q9')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q8" disabled onclick="nextScreen('q9')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q9: Remittance ===== -->
-  <div class="screen" id="screen-q9">
-    <div class="q-label">Question 9 of 11</div>
-    <div class="q-title">Do you send money to family abroad?</div>
-    <div class="q-micro">Remittances help us understand your financial commitments 🌍</div>
-    <div class="options" id="opts-q9">
-      <div class="option" onclick="selectOption(this,'q9',2)"><span class="option-emoji">💸</span><div><div class="option-text">Yes, regularly</div></div></div>
-      <div class="option" onclick="selectOption(this,'q9',3)"><span class="option-emoji">↔️</span><div><div class="option-text">Sometimes</div></div></div>
-      <div class="option" onclick="selectOption(this,'q9',5)"><span class="option-emoji">🏡</span><div><div class="option-text">No</div></div></div>
+  <div class="screen has-footer quiz1" id="screen-q9">
+    <div class="screen-content">
+      <div class="q-label">Question 9 of 11</div>
+      <div class="q-title">Do you send money to family abroad?</div>
+      <div class="q-micro">Remittances help us understand your financial commitments 🌍</div>
+      <div class="options" id="opts-q9">
+        <div class="option" onclick="selectOption(this,'q9',2)"><span class="option-emoji">💸</span><div><div class="option-text">Yes, regularly</div></div></div>
+        <div class="option" onclick="selectOption(this,'q9',3)"><span class="option-emoji">↔️</span><div><div class="option-text">Sometimes</div></div></div>
+        <div class="option" onclick="selectOption(this,'q9',5)"><span class="option-emoji">🏡</span><div><div class="option-text">No</div></div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q9" disabled onclick="nextScreen('q10')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q9" disabled onclick="nextScreen('q10')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q10: E-wallet ===== -->
-  <div class="screen" id="screen-q10">
-    <div class="q-label">Question 10 of 11</div>
-    <div class="q-title">Do you use an e-wallet?</div>
-    <div class="q-micro">Tells us about your digital finance habits 📱</div>
-    <div class="options" id="opts-q10">
-      <div class="option" onclick="selectOption(this,'q10',4)"><span class="option-emoji">📲</span><div><div class="option-text">Yes, GCash</div></div></div>
-      <div class="option" onclick="selectOption(this,'q10',4)"><span class="option-emoji">📲</span><div><div class="option-text">Yes, PayMaya</div></div></div>
-      <div class="option" onclick="selectOption(this,'q10',5)"><span class="option-emoji">🔥</span><div><div class="option-text">Yes, both</div></div></div>
-      <div class="option" onclick="selectOption(this,'q10',1)"><span class="option-emoji">💵</span><div><div class="option-text">No</div></div></div>
+  <div class="screen has-footer quiz1" id="screen-q10">
+    <div class="screen-content">
+      <div class="q-label">Question 10 of 11</div>
+      <div class="q-title">Do you use an e-wallet?</div>
+      <div class="q-micro">Tells us about your digital finance habits 📱</div>
+      <div class="options" id="opts-q10">
+        <div class="option" onclick="selectOption(this,'q10',4)"><span class="option-emoji">📲</span><div><div class="option-text">Yes, GCash</div></div></div>
+        <div class="option" onclick="selectOption(this,'q10',4)"><span class="option-emoji">📲</span><div><div class="option-text">Yes, PayMaya</div></div></div>
+        <div class="option" onclick="selectOption(this,'q10',5)"><span class="option-emoji">🔥</span><div><div class="option-text">Yes, both</div></div></div>
+        <div class="option" onclick="selectOption(this,'q10',1)"><span class="option-emoji">💵</span><div><div class="option-text">No</div></div></div>
+      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q10" disabled onclick="nextScreen('q11')">Next →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q10" disabled onclick="nextScreen('q11')">Next →</button>
+    </div>
   </div>
 
   <!-- ===== Q11: Bonus ===== -->
-  <div class="screen" id="screen-q11">
-    <div class="q-label">Question 11 of 11 — Final one! 🎉</div>
-    <div class="q-title">You get a ₱5,000 bonus today. What first?</div>
-    <div class="q-micro">Helps us understand your financial priorities 🧭</div>
-    <div class="options-grid" style="grid-template-columns:1fr 1fr; gap:8px;">
-      <div class="option-card" onclick="selectGridOption(this,'q11',5)">
-        <div class="big-emoji">🏦</div>
-        <div class="card-title">Save it</div>
+  <div class="screen has-footer quiz1" id="screen-q11">
+    <div class="screen-content">
+      <div class="q-label">Question 11 of 11 — Final one! 🎉</div>
+      <div class="q-title">You get a ₱5,000 bonus today. What first?</div>
+      <div class="q-micro">Helps us understand your financial priorities 🧭</div>
+      <div class="options-grid" style="grid-template-columns:1fr 1fr; gap:8px;">
+        <div class="option-card" onclick="selectGridOption(this,'q11',5)">
+          <div class="big-emoji">🏦</div>
+          <div class="card-title">Save it</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this,'q11',4)">
+          <div class="big-emoji">📜</div>
+          <div class="card-title">Pay a bill</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this,'q11',3)">
+          <div class="big-emoji">🛒</div>
+          <div class="card-title">Buy groceries</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this,'q11',2)">
+          <div class="big-emoji">📱</div>
+          <div class="card-title">Buy a gadget</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this,'q11',1)">
+          <div class="big-emoji">✈️</div>
+          <div class="card-title">Leisure/travel</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this,'q11',5)">
+          <div class="big-emoji">💳</div>
+          <div class="card-title">Pay off debt</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this,'q11',4)">
+          <div class="big-emoji">📈</div>
+          <div class="card-title">Invest it</div>
+        </div>
+        <div class="option-card" onclick="selectGridOption(this,'q11',3)">
+          <div class="big-emoji">👨‍👩‍👧</div>
+          <div class="card-title">Share with family</div>
+        </div>
       </div>
-      <div class="option-card" onclick="selectGridOption(this,'q11',4)">
-        <div class="big-emoji">📜</div>
-        <div class="card-title">Pay a bill</div>
-      </div>
-      <div class="option-card" onclick="selectGridOption(this,'q11',3)">
-        <div class="big-emoji">🛒</div>
-        <div class="card-title">Buy groceries</div>
-      </div>
-      <div class="option-card" onclick="selectGridOption(this,'q11',2)">
-        <div class="big-emoji">📱</div>
-        <div class="card-title">Buy a gadget</div>
-      </div>
-      <div class="option-card" onclick="selectGridOption(this,'q11',1)">
-        <div class="big-emoji">✈️</div>
-        <div class="card-title">Leisure/travel</div>
-      </div>
-      <div class="option-card" onclick="selectGridOption(this,'q11',5)">
-        <div class="big-emoji">💳</div>
-        <div class="card-title">Pay off debt</div>
-      </div>
-      <div class="option-card" onclick="selectGridOption(this,'q11',4)">
-        <div class="big-emoji">📈</div>
-        <div class="card-title">Invest it</div>
-      </div>
-      <div class="option-card" onclick="selectGridOption(this,'q11',3)">
-        <div class="big-emoji">👨‍👩‍👧</div>
-        <div class="card-title">Share with family</div>
-      </div>
+      <div class="spacer"></div>
     </div>
-    <div class="spacer"></div>
-    <button class="btn" id="btn-q11" disabled onclick="nextScreen('calculating')">Calculate my score →</button>
+    <div class="screen-footer">
+      <button class="btn" id="btn-q11" disabled onclick="nextScreen('calculating')">Calculate my score →</button>
+    </div>
   </div>
 
   <!-- ===== CALCULATING ===== -->
-  <div class="screen" id="screen-calculating">
+  <div class="screen quiz1" id="screen-calculating">
     <div class="anim-screen">
       <div class="score-anim-wrap">
         <svg width="180" height="180" viewBox="0 0 180 180">
@@ -833,43 +1046,51 @@
   </div>
 
   <!-- ===== PHONE ===== -->
-  <div class="screen" id="screen-phone">
-    <div class="phone-top">
-      <div class="score-teaser">
-        <span>Your score is ready</span>
-        <span class="blurred-score">7██</span>
+  <div class="screen has-footer quiz1" id="screen-phone">
+    <div class="screen-content">
+      <div class="phone-top">
+        <div class="score-teaser">
+          <span>Your score is ready</span>
+          <span class="blurred-score">7██</span>
+        </div>
+        <h2>One step away!</h2>
+        <p>Enter your phone number to unlock your full credit score and see how to improve it.</p>
       </div>
-      <h2>One step away!</h2>
-      <p>Enter your phone number to unlock your full credit score and see how to improve it.</p>
+      <div class="phone-form" id="phoneForm">
+        <div class="input-label">Mobile number</div>
+        <div class="phone-input-wrap">
+          <div class="country-code">🇵🇭 +63</div>
+          <input type="tel" id="phoneInput" placeholder="9XX XXX XXXX" maxlength="10" oninput="checkPhone()" />
+        </div>
+        <div class="disclaimer" style="text-align:left; margin-top:8px;">We'll send you a one-time code to verify</div>
+        <div class="spacer"></div>
+        <div class="disclaimer">This is a preliminary assessment, not a formal credit check.<br>Your data is protected and never sold.</div>
+      </div>
+      <div id="otpForm" style="display:none; flex-direction:column; flex:1; padding-top:20px;">
+        <div class="input-label" style="text-align:center; margin-bottom:16px;">Enter the 4-digit code sent to your number</div>
+        <div class="otp-wrap">
+          <input class="otp-input" maxlength="1" id="otp1" oninput="otpMove(this,'otp2')" />
+          <input class="otp-input" maxlength="1" id="otp2" oninput="otpMove(this,'otp3')" />
+          <input class="otp-input" maxlength="1" id="otp3" oninput="otpMove(this,'otp4')" />
+          <input class="otp-input" maxlength="1" id="otp4" oninput="checkOTP()" />
+        </div>
+        <div class="otp-hint">Didn't get it? <a href="#" onclick="resendOTP()">Resend code</a></div>
+        <div class="otp-hint" id="otpDemo" style="color:#FF6B4A; font-weight:600;">(Demo: use code 1234)</div>
+        <div class="spacer"></div>
+      </div>
     </div>
-    <div class="phone-form" id="phoneForm">
-      <div class="input-label">Mobile number</div>
-      <div class="phone-input-wrap">
-        <div class="country-code">🇵🇭 +63</div>
-        <input type="tel" id="phoneInput" placeholder="9XX XXX XXXX" maxlength="10" oninput="checkPhone()" />
+    <div class="screen-footer" id="phoneScreenFooter">
+      <div class="footer-btn-phone">
+        <button class="btn" id="btnPhone" disabled onclick="sendOTP()">Send verification code →</button>
       </div>
-      <div class="disclaimer" style="text-align:left; margin-top:8px;">We'll send you a one-time code to verify</div>
-      <div class="spacer"></div>
-      <button class="btn" id="btnPhone" disabled onclick="sendOTP()" style="margin-top:24px;">Send verification code →</button>
-      <div class="disclaimer">This is a preliminary assessment, not a formal credit check.<br>Your data is protected and never sold.</div>
-    </div>
-    <div id="otpForm" style="display:none; flex-direction:column; flex:1; padding-top:20px;">
-      <div class="input-label" style="text-align:center; margin-bottom:16px;">Enter the 4-digit code sent to your number</div>
-      <div class="otp-wrap">
-        <input class="otp-input" maxlength="1" id="otp1" oninput="otpMove(this,'otp2')" />
-        <input class="otp-input" maxlength="1" id="otp2" oninput="otpMove(this,'otp3')" />
-        <input class="otp-input" maxlength="1" id="otp3" oninput="otpMove(this,'otp4')" />
-        <input class="otp-input" maxlength="1" id="otp4" oninput="checkOTP()" />
+      <div class="footer-btn-otp">
+        <button class="btn" id="btnOTP" disabled onclick="verifyOTP()">Show my score →</button>
       </div>
-      <div class="otp-hint">Didn't get it? <a href="#" onclick="resendOTP()">Resend code</a></div>
-      <div class="otp-hint" id="otpDemo" style="color:#FF6B4A; font-weight:600;">(Demo: use code 1234)</div>
-      <div class="spacer"></div>
-      <button class="btn" id="btnOTP" disabled onclick="verifyOTP()">Show my score →</button>
     </div>
   </div>
 
   <!-- ===== RESULT ===== -->
-  <div class="screen" id="screen-result">
+  <div class="screen quiz1" id="screen-result">
     <div class="scroll-content">
       <div class="result-top">
         <div class="result-label">Your preliminary score</div>
@@ -930,6 +1151,354 @@
     </div>
   </div>
 
+  <!-- ========== QUIZ 2 (New style) ========== -->
+  <div class="screen quiz2 has-footer" id="screen-v2-start" style="display:none;">
+    <div class="screen-content">
+      <div class="start-hero">
+        <div class="start-badge">⚡ Takes only 60 seconds</div>
+        <h1>Discover your<br><span>Credit Score</span><br>for free</h1>
+        <p>Answer a few quick questions and get your personalized credit assessment instantly.</p>
+        <div class="score-preview">
+          <div class="score-circle"><div class="score-circle-inner">?</div></div>
+          <div class="score-preview-text"><h3>Your score is waiting</h3><p>No hard check · Totally free</p></div>
+        </div>
+      </div>
+      <div class="features-row">
+        <div class="feature-chip"><div class="icon">🔒</div><p>No hard check</p></div>
+        <div class="feature-chip"><div class="icon">🎯</div><p>Personalized</p></div>
+        <div class="feature-chip"><div class="icon">📈</div><p>Improve tips</p></div>
+      </div>
+      <div class="timer-badge">⏱ Most people finish in 60 sec</div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" onclick="startQuizV2()">Let's find my score →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q1" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 1 of 11 · Just for fun</div>
+      <div class="q-title">Which character feels most like you?</div>
+      <div class="q-micro">No right or wrong — personalizes your result ✨</div>
+      <div class="options-grid">
+        <div class="option-card" onclick="selectGridV2(this,'q1',0)"><div class="big-emoji">🧠</div><div class="card-title">The Planner</div><div class="card-sub">Control & ahead</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q1',0)"><div class="big-emoji">⚡</div><div class="card-title">The Hustler</div><div class="card-sub">Always on the move</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q1',0)"><div class="big-emoji">🌱</div><div class="card-title">The Builder</div><div class="card-sub">Steady growth</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q1',0)"><div class="big-emoji">🎉</div><div class="card-title">The Enjoyer</div><div class="card-sub">Live in the moment</div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q1" disabled onclick="goV2('q2')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q2" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 2 of 11</div>
+      <div class="q-title">Pick a card style you like</div>
+      <div class="q-micro">We'll personalize your experience 🎨</div>
+      <div class="style-cards">
+        <div class="style-card sc-minimal" onclick="selectStyleV2(this,'q2')"><span class="sc-label">Minimal & Clean</span></div>
+        <div class="style-card sc-bold" onclick="selectStyleV2(this,'q2')"><span class="sc-label">Bold & Colorful</span></div>
+        <div class="style-card sc-dark" onclick="selectStyleV2(this,'q2')"><span class="sc-label">Dark & Premium</span></div>
+        <div class="style-card sc-friendly" onclick="selectStyleV2(this,'q2')"><span class="sc-label">Friendly & Playful</span></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q2" disabled onclick="goV2('q3')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q3" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 3 of 11</div>
+      <div class="q-title">How often do you receive your income?</div>
+      <div class="q-micro">Helps us understand your cash flow 💸</div>
+      <div class="options">
+        <div class="option" onclick="selV2(this,'q3',5)"><span class="option-emoji">📅</span><div><div class="option-text">Weekly</div></div></div>
+        <div class="option" onclick="selV2(this,'q3',5)"><span class="option-emoji">📆</span><div><div class="option-text">Every two weeks</div></div></div>
+        <div class="option" onclick="selV2(this,'q3',4)"><span class="option-emoji">📑</span><div><div class="option-text">Monthly</div></div></div>
+        <div class="option" onclick="selV2(this,'q3',1)"><span class="option-emoji">🎲</span><div><div class="option-text">Irregular / freelance</div></div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q3" disabled onclick="goV2('q4')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q4" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 4 of 11</div>
+      <div class="q-title">How many people depend on your income?</div>
+      <div class="q-micro">Including yourself</div>
+      <div class="options">
+        <div class="option" onclick="selV2(this,'q4',5)"><span class="option-emoji">🧍</span><div><div class="option-text">Just me</div></div></div>
+        <div class="option" onclick="selV2(this,'q4',4)"><span class="option-emoji">👨‍👩‍👦</span><div><div class="option-text">2–3 people</div></div></div>
+        <div class="option" onclick="selV2(this,'q4',3)"><span class="option-emoji">👨‍👩‍👧‍👦</span><div><div class="option-text">4–5 people</div></div></div>
+        <div class="option" onclick="selV2(this,'q4',2)"><span class="option-emoji">🏘️</span><div><div class="option-text">6 or more</div></div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q4" disabled onclick="goV2('q5')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q5" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 5 of 11</div>
+      <div class="q-title">What's your average monthly income?</div>
+      <div class="q-micro">An estimate is totally fine 😊</div>
+      <div class="options">
+        <div class="option" onclick="selV2(this,'q5',1)"><span class="option-emoji">💵</span><div><div class="option-text">Less than ₱10,000</div></div></div>
+        <div class="option" onclick="selV2(this,'q5',2)"><span class="option-emoji">💵</span><div><div class="option-text">₱10,000 – 20,000</div></div></div>
+        <div class="option" onclick="selV2(this,'q5',3)"><span class="option-emoji">💵</span><div><div class="option-text">₱20,000 – 40,000</div></div></div>
+        <div class="option" onclick="selV2(this,'q5',4)"><span class="option-emoji">💵</span><div><div class="option-text">₱40,000 – 80,000</div></div></div>
+        <div class="option" onclick="selV2(this,'q5',5)"><span class="option-emoji">💵</span><div><div class="option-text">More than ₱80,000</div></div></div>
+        <div class="option" onclick="selV2(this,'q5',2)"><span class="option-emoji">🤐</span><div><div class="option-text">Prefer not to say</div></div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q5" disabled onclick="goV2('mid')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-mid" style="display:none;">
+    <div class="screen-content">
+      <div class="midpoint">
+        <div class="midpoint-icon">🎯</div>
+        <h2 class="fade-in">You're halfway there!</h2>
+        <p class="fade-in-2">Keep going — your score gets more accurate with every answer.</p>
+        <div class="stat-row fade-in-3">
+          <div class="stat-chip"><div class="num">5</div><div class="lbl">Done</div></div>
+          <div class="stat-chip"><div class="num">6</div><div class="lbl">To go</div></div>
+          <div class="stat-chip"><div class="num">~30s</div><div class="lbl">Left</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn btn-teal fade-in-4" onclick="goV2('q6')">Keep going →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q6" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 6 of 11</div>
+      <div class="q-title">How much of your income goes to food?</div>
+      <div class="q-micro">Groceries + eating out 🍱</div>
+      <div class="options">
+        <div class="option" onclick="selV2(this,'q6',5)"><span class="option-emoji">✅</span><div><div class="option-text">Less than 20%</div><div class="option-sub">Very lean</div></div></div>
+        <div class="option" onclick="selV2(this,'q6',4)"><span class="option-emoji">👍</span><div><div class="option-text">20–35%</div><div class="option-sub">Healthy balance</div></div></div>
+        <div class="option" onclick="selV2(this,'q6',2)"><span class="option-emoji">⚠️</span><div><div class="option-text">35–50%</div><div class="option-sub">Significant</div></div></div>
+        <div class="option" onclick="selV2(this,'q6',1)"><span class="option-emoji">🔴</span><div><div class="option-text">More than 50%</div><div class="option-sub">Most on food</div></div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q6" disabled onclick="goV2('q7')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q7" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 7 of 11</div>
+      <div class="q-title">How often do you use credit products?</div>
+      <div class="q-micro">Cards, installments, buy now pay later 💳</div>
+      <div class="options">
+        <div class="option" onclick="selV2(this,'q7',2)"><span class="option-emoji">🚫</span><div><div class="option-text">Never</div></div></div>
+        <div class="option" onclick="selV2(this,'q7',3)"><span class="option-emoji">😴</span><div><div class="option-text">Rarely</div></div></div>
+        <div class="option" onclick="selV2(this,'q7',4)"><span class="option-emoji">📊</span><div><div class="option-text">Sometimes</div></div></div>
+        <div class="option" onclick="selV2(this,'q7',5)"><span class="option-emoji">🔄</span><div><div class="option-text">Often</div></div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q7" disabled onclick="goV2('q8')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q8" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 8 of 11</div>
+      <div class="q-title">How often do you pay your bills on time?</div>
+      <div class="q-micro">Electricity, rent, loans ⚡</div>
+      <div class="options">
+        <div class="option" onclick="selV2(this,'q8',5)"><span class="option-emoji">🌟</span><div><div class="option-text">Always</div></div></div>
+        <div class="option" onclick="selV2(this,'q8',4)"><span class="option-emoji">👍</span><div><div class="option-text">Most of the time</div></div></div>
+        <div class="option" onclick="selV2(this,'q8',2)"><span class="option-emoji">😅</span><div><div class="option-text">Sometimes late</div></div></div>
+        <div class="option" onclick="selV2(this,'q8',1)"><span class="option-emoji">😬</span><div><div class="option-text">Often late</div></div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q8" disabled onclick="goV2('q9')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q9" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 9 of 11</div>
+      <div class="q-title">Do you send money to family abroad?</div>
+      <div class="q-micro">Helps us understand your commitments 🌍</div>
+      <div class="options">
+        <div class="option" onclick="selV2(this,'q9',2)"><span class="option-emoji">💸</span><div><div class="option-text">Yes, regularly</div></div></div>
+        <div class="option" onclick="selV2(this,'q9',3)"><span class="option-emoji">↔️</span><div><div class="option-text">Sometimes</div></div></div>
+        <div class="option" onclick="selV2(this,'q9',5)"><span class="option-emoji">🏡</span><div><div class="option-text">No</div></div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q9" disabled onclick="goV2('q10')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q10" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 10 of 11</div>
+      <div class="q-title">Do you use an e-wallet?</div>
+      <div class="q-micro">Tells us about your digital habits 📱</div>
+      <div class="options">
+        <div class="option" onclick="selV2(this,'q10',4)"><span class="option-emoji">📲</span><div><div class="option-text">Yes, GCash</div></div></div>
+        <div class="option" onclick="selV2(this,'q10',4)"><span class="option-emoji">📲</span><div><div class="option-text">Yes, PayMaya</div></div></div>
+        <div class="option" onclick="selV2(this,'q10',5)"><span class="option-emoji">🔥</span><div><div class="option-text">Yes, both</div></div></div>
+        <div class="option" onclick="selV2(this,'q10',1)"><span class="option-emoji">💵</span><div><div class="option-text">No</div></div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q10" disabled onclick="goV2('q11')">Next →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-q11" style="display:none;">
+    <div class="screen-content">
+      <div class="q-label">Question 11 of 11 · Last one! 🎉</div>
+      <div class="q-title">You get a ₱5,000 bonus. What first?</div>
+      <div class="q-micro">Helps us understand your priorities 🧭</div>
+      <div class="options-grid">
+        <div class="option-card" onclick="selectGridV2(this,'q11',5)"><div class="big-emoji">🏦</div><div class="card-title">Save it</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q11',4)"><div class="big-emoji">📜</div><div class="card-title">Pay a bill</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q11',3)"><div class="big-emoji">🛒</div><div class="card-title">Buy groceries</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q11',2)"><div class="big-emoji">📱</div><div class="card-title">Buy a gadget</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q11',1)"><div class="big-emoji">✈️</div><div class="card-title">Leisure/travel</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q11',5)"><div class="big-emoji">💳</div><div class="card-title">Pay off debt</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q11',4)"><div class="big-emoji">📈</div><div class="card-title">Invest it</div></div>
+        <div class="option-card" onclick="selectGridV2(this,'q11',3)"><div class="big-emoji">👨‍👩‍👧</div><div class="card-title">Share with family</div></div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer">
+      <button class="btn" id="btn-v2-q11" disabled onclick="goV2('calculating')">Calculate my score →</button>
+    </div>
+  </div>
+
+  <div class="screen quiz2" id="screen-v2-calculating" style="display:none;">
+    <div class="anim-screen">
+      <div class="score-anim-wrap">
+        <svg width="180" height="180" viewBox="0 0 180 180">
+          <circle cx="90" cy="90" r="80" fill="none" stroke="#F0F0F5" stroke-width="12"/>
+          <circle id="animCircleV2" cx="90" cy="90" r="80" fill="none" stroke="url(#gradV2)" stroke-width="12" stroke-linecap="round" stroke-dasharray="502" stroke-dashoffset="502"/>
+          <defs><linearGradient id="gradV2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#F15961"/><stop offset="100%" style="stop-color:#FEC34E"/></linearGradient></defs>
+        </svg>
+        <div class="score-anim-number" id="animNumV2">0</div>
+        <div class="score-anim-label">out of 850</div>
+      </div>
+      <div class="calculating-text">Calculating your score</div>
+      <div class="calculating-sub">Just a moment <span class="dots"><span></span><span></span><span></span></span></div>
+      <div class="anim-steps" id="animStepsV2">
+        <div class="anim-step" id="step1V2"><span class="step-icon">💰</span><span class="step-text">Analyzing income…</span></div>
+        <div class="anim-step" id="step2V2"><span class="step-icon">📊</span><span class="step-text">Reviewing payments…</span></div>
+        <div class="anim-step" id="step3V2"><span class="step-icon">🧮</span><span class="step-text">Running model…</span></div>
+        <div class="anim-step" id="step4V2"><span class="step-icon">✨</span><span class="step-text">Preparing result…</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="screen quiz2 has-footer" id="screen-v2-phone" style="display:none;">
+    <div class="screen-content">
+      <div class="phone-top">
+        <div class="score-teaser"><span>Your score is ready</span><span class="blurred-score" id="teaserScoreV2">7██</span></div>
+        <h2>One step away!</h2>
+        <p>Enter your number to unlock your full credit score.</p>
+      </div>
+      <div id="phoneStateV2">
+        <div class="input-label">Mobile number</div>
+        <div class="phone-input-wrap">
+          <div class="country-code">🇵🇭 +63</div>
+          <input type="tel" id="phoneInputV2" placeholder="9XX XXX XXXX" maxlength="10" oninput="checkPhoneV2()"/>
+        </div>
+        <div class="disclaimer" style="text-align:left;margin-top:8px;">We'll send a one-time code to verify</div>
+      </div>
+      <div id="otpStateV2" style="display:none;">
+        <div class="input-label" style="text-align:center;margin-bottom:16px;">Enter the 4-digit code</div>
+        <div class="otp-wrap">
+          <input class="otp-input" maxlength="1" id="otp1V2" oninput="otpNextV2(this,'otp2V2')"/>
+          <input class="otp-input" maxlength="1" id="otp2V2" oninput="otpNextV2(this,'otp3V2')"/>
+          <input class="otp-input" maxlength="1" id="otp3V2" oninput="otpNextV2(this,'otp4V2')"/>
+          <input class="otp-input" maxlength="1" id="otp4V2" oninput="checkOTPV2()"/>
+        </div>
+        <div class="otp-hint">Demo: use code 1234</div>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="screen-footer" id="phoneFooterV2">
+      <div class="footer-btn-phone"><button class="btn" id="btnPhoneV2" disabled onclick="sendOTPV2()">Send verification code →</button></div>
+      <div class="footer-btn-otp" style="display:none;"><button class="btn" id="btnOTPV2" disabled onclick="verifyOTPV2()">Show my score →</button></div>
+    </div>
+  </div>
+
+  <div class="screen quiz2" id="screen-v2-result" style="display:none;">
+    <div class="scroll-content">
+      <div class="result-top">
+        <div class="result-label">Your preliminary score</div>
+        <div class="result-title">Here's where you stand 🎉</div>
+        <div class="big-score-wrap">
+          <div class="big-score-ring">
+            <svg width="110" height="110" viewBox="0 0 110 110">
+              <circle cx="55" cy="55" r="48" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="10"/>
+              <circle id="resultCircleV2" cx="55" cy="55" r="48" fill="none" stroke="url(#resGradV2)" stroke-width="10" stroke-linecap="round" stroke-dasharray="301" stroke-dashoffset="301"/>
+              <defs><linearGradient id="resGradV2" x1="0%" y1="0%" x2="100%" y2="0%"><stop offset="0%" style="stop-color:#F15961"/><stop offset="100%" style="stop-color:#4ADE80"/></linearGradient></defs>
+            </svg>
+            <div class="big-score-num" id="resultNumV2">—</div>
+            <div class="big-score-sub">out of 850</div>
+          </div>
+          <div class="score-info">
+            <div style="color:rgba(255,255,255,0.6);font-size:13px;margin-bottom:4px;">Credit score</div>
+            <h2 id="scoreBandV2">Growing</h2>
+            <div class="score-status" id="scoreStatusV2">📈 On the right track</div>
+          </div>
+        </div>
+        <div class="score-range">
+          <div class="range-block" style="background:#ef4444;flex:1.5;"></div>
+          <div class="range-block" style="background:#f97316;flex:1.5;"></div>
+          <div class="range-block" style="background:#eab308;flex:1.5;"></div>
+          <div class="range-block" style="background:#22c55e;flex:1.5;"></div>
+          <div class="range-block" style="background:#16a34a;flex:1;"></div>
+        </div>
+        <div class="score-range-labels"><span>300</span><span>Poor</span><span>Fair</span><span>Good</span><span>850</span></div>
+      </div>
+      <div class="result-body" style="padding:20px;">
+        <div class="result-section-title">Key factors</div>
+        <div class="factors" id="factorsV2"></div>
+        <div class="cta-box">
+          <h3>📲 Get your real score in the app</h3>
+          <p>Unlock your full profile and up to ₱250,000 credit limit.</p>
+          <div class="app-btns">
+            <div class="app-btn" onclick="alert('App Store')">🍎 App Store</div>
+            <div class="app-btn" onclick="alert('Google Play')">▶ Google Play</div>
+          </div>
+        </div>
+        <div class="secondary-cta">Want to know more? <a href="https://salmon.ph/salmon-credit" target="_blank">See Salmon Credit →</a></div>
+        <div class="disclaimer" style="padding-bottom:20px;">Preliminary estimate only, not a formal credit bureau check.</div>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -970,16 +1539,40 @@ function updateProgress(screen) {
 }
 
 function show(id) {
+  document.getElementById('app').classList.remove('show-home');
+  document.querySelectorAll('.quiz2').forEach(s => s.style.display = 'none');
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   const el = document.getElementById('screen-' + id);
-  el.classList.add('active');
+  if (el) { el.style.display = 'flex'; el.classList.add('active'); }
   updateProgress(id);
   state.currentScreen = id;
+}
+
+function startQuiz1() {
+  document.getElementById('app').classList.remove('show-home');
+  document.getElementById('app').classList.remove('quiz2-active');
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); if (s.classList.contains('quiz2')) s.style.display = 'none'; });
+  const start = document.getElementById('screen-start');
+  if (start) { start.style.display = 'flex'; start.classList.add('active'); }
+  updateProgress('start');
+  state.currentScreen = 'start';
+  state.history = [];
 }
 
 function startQuiz() {
   state.history = ['start'];
   nextScreen('q1');
+}
+
+function startQuiz2() {
+  document.getElementById('app').classList.remove('show-home');
+  document.getElementById('app').classList.add('quiz2-active');
+  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); if (s.classList.contains('quiz2')) s.style.display = 'none'; });
+  const first = document.getElementById('screen-v2-start');
+  if (first) { first.style.display = 'flex'; first.classList.add('active'); }
+  S2.current = 'start';
+  S2.history = [];
+  if (typeof updateProgressV2 === 'function') updateProgressV2('start');
 }
 
 function nextScreen(to) {
@@ -992,7 +1585,16 @@ function goBack() {
   if (state.history.length > 0) {
     const prev = state.history.pop();
     show(prev);
+  } else if (state.currentScreen === 'start') {
+    showHome();
   }
+}
+
+function showHome() {
+  document.getElementById('app').classList.add('show-home');
+  document.getElementById('app').classList.remove('quiz2-active');
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-home').classList.add('active');
 }
 
 function selectOption(el, q, score) {
@@ -1091,6 +1693,7 @@ function sendOTP() {
   otpF.style.display = 'flex';
   otpF.style.flexDirection = 'column';
   otpF.style.flex = '1';
+  document.getElementById('phoneScreenFooter').classList.add('show-otp');
   setTimeout(() => document.getElementById('otp1').focus(), 100);
 }
 
@@ -1162,6 +1765,189 @@ function showResult() {
     { icon:'📲', text:'Digital finance habits', badge: (state.scores['q10']||0)>=4?'Active':'Beginner', cls: (state.scores['q10']||0)>=4?'badge-good':'badge-ok' },
   ];
   document.getElementById('factors').innerHTML = factorsData.map(f => `
+    <div class="factor-row">
+      <span class="factor-icon">${f.icon}</span>
+      <span class="factor-text">${f.text}</span>
+      <span class="factor-badge ${f.cls}">${f.badge}</span>
+    </div>`).join('');
+}
+
+// ========== QUIZ 2 (New style) ==========
+const S2 = { scores: {}, current: 'start', history: [], final: 0 };
+const TOTAL_V2 = 11;
+
+function updateProgressV2(id) {
+  const wrap = document.getElementById('progressWrap');
+  if (!wrap) return;
+  if (id === 'start') { wrap.style.display = 'none'; return; }
+  wrap.style.display = 'flex';
+  const q = parseInt(id.replace('q', ''));
+  const fill = document.getElementById('progressFill');
+  const txt = document.getElementById('progressText');
+  if (!fill || !txt) return;
+  const step = isNaN(q) ? (id === 'mid' ? 5 : TOTAL_V2 + 1) : q;
+  fill.style.width = Math.min(100, Math.round(step / TOTAL_V2 * 100)) + '%';
+  txt.textContent = !isNaN(q) ? q + ' / ' + TOTAL_V2 : (id === 'mid' ? '5 / ' + TOTAL_V2 : 'Almost done!');
+}
+
+function showV2(id) {
+  document.querySelectorAll('.quiz2').forEach(s => { s.classList.remove('active'); s.style.display = 'none'; });
+  const el = document.getElementById('screen-v2-' + id);
+  if (el) { el.style.display = 'flex'; el.classList.add('active'); }
+  updateProgressV2(id);
+  S2.current = id;
+}
+
+function startQuizV2() {
+  S2.history = [];
+  S2.scores = {};
+  S2.current = 'start';
+  S2.final = 0;
+  showV2('q1');
+}
+
+function goV2(to) {
+  S2.history.push(S2.current);
+  showV2(to);
+  if (to === 'calculating') runCalculatingV2();
+}
+
+function goBackV2() {
+  if (S2.history.length > 0) showV2(S2.history.pop());
+  else if (S2.current === 'start') showHome();
+}
+
+function selV2(el, q, sc) {
+  el.closest('.options').querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  S2.scores[q] = sc;
+  const b = document.getElementById('btn-v2-' + q);
+  if (b) b.disabled = false;
+}
+
+function selectGridV2(el, q, sc) {
+  el.closest('.options-grid').querySelectorAll('.option-card').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  S2.scores[q] = sc;
+  const b = document.getElementById('btn-v2-' + q);
+  if (b) b.disabled = false;
+}
+
+function selectStyleV2(el, q) {
+  el.closest('.screen').querySelectorAll('.style-card').forEach(o => o.classList.remove('selected'));
+  el.classList.add('selected');
+  S2.scores[q] = 3;
+  const b = document.getElementById('btn-v2-' + q);
+  if (b) b.disabled = false;
+}
+
+function calcScoreV2() {
+  const w = { q3: 8, q4: 5, q5: 15, q6: 10, q7: 12, q8: 20, q9: 5, q10: 8, q11: 10 };
+  let tot = 0, mx = 0;
+  for (const [q, wt] of Object.entries(w)) {
+    tot += (S2.scores[q] || 1) * wt;
+    mx += 5 * wt;
+  }
+  return Math.round(300 + (tot / mx) * 550);
+}
+
+function animRingV2(circleId, numId, target, dashLen, duration, cb) {
+  const circ = document.getElementById(circleId);
+  const numEl = numId ? document.getElementById(numId) : null;
+  let start = null;
+  function frame(ts) {
+    if (!start) start = ts;
+    const p = Math.min(1, (ts - start) / duration);
+    const e = 1 - Math.pow(1 - p, 3);
+    const cur = Math.round(300 + e * (target - 300));
+    if (numEl) numEl.textContent = cur;
+    if (circ) circ.style.strokeDashoffset = dashLen - dashLen * ((cur - 300) / 550);
+    if (p < 1) requestAnimationFrame(frame);
+    else if (cb) cb();
+  }
+  requestAnimationFrame(frame);
+}
+
+function runCalculatingV2() {
+  const final = calcScoreV2();
+  S2.final = final;
+  const steps = ['step1V2', 'step2V2', 'step3V2', 'step4V2'];
+  const done = ['Income analyzed ✓', 'Payment history checked ✓', 'Score calculated ✓', 'Result ready ✓'];
+  let i = 0;
+  const iv = setInterval(() => {
+    if (i > 0) {
+      const p = document.getElementById(steps[i - 1]);
+      if (p) { p.className = 'anim-step done'; const st = p.querySelector('.step-text'); if (st) st.textContent = done[i - 1]; }
+    }
+    if (i < steps.length) {
+      const s = document.getElementById(steps[i]);
+      if (s) s.classList.add('active');
+    }
+    i++;
+    if (i > steps.length) clearInterval(iv);
+  }, 650);
+  setTimeout(() => {
+    animRingV2('animCircleV2', 'animNumV2', final, 502, 2600, () => setTimeout(() => goV2('phone'), 500));
+  }, 300);
+  const teaser = document.getElementById('teaserScoreV2');
+  if (teaser) teaser.textContent = String(final)[0] + '██';
+}
+
+function checkPhoneV2() {
+  const v = (document.getElementById('phoneInputV2') || {}).value.replace(/\D/g, '') || '';
+  const b = document.getElementById('btnPhoneV2');
+  if (b) b.disabled = v.length < 10;
+}
+
+function sendOTPV2() {
+  const phoneState = document.getElementById('phoneStateV2');
+  const otpState = document.getElementById('otpStateV2');
+  const footer = document.getElementById('phoneFooterV2');
+  if (phoneState) phoneState.style.display = 'none';
+  if (otpState) { otpState.style.display = 'block'; }
+  if (footer) footer.classList.add('show-otp');
+  setTimeout(() => { const o1 = document.getElementById('otp1V2'); if (o1) o1.focus(); }, 100);
+}
+
+function otpNextV2(el, nextId) {
+  if (el.value.length === 1) { const n = document.getElementById(nextId); if (n) n.focus(); }
+  checkOTPV2();
+}
+
+function checkOTPV2() {
+  const code = ['otp1V2', 'otp2V2', 'otp3V2', 'otp4V2'].map(id => (document.getElementById(id) || {}).value).join('');
+  const b = document.getElementById('btnOTPV2');
+  if (b) b.disabled = code.length < 4;
+}
+
+function verifyOTPV2() {
+  const code = ['otp1V2', 'otp2V2', 'otp3V2', 'otp4V2'].map(id => (document.getElementById(id) || {}).value).join('');
+  if (code !== '1234') { alert('Invalid code. Use 1234 for demo.'); return; }
+  showResultV2();
+}
+
+function showResultV2() {
+  goV2('result');
+  const sc = S2.final;
+  setTimeout(() => animRingV2('resultCircleV2', 'resultNumV2', sc, 301, 1100), 200);
+  let band, status;
+  if (sc >= 750) { band = 'Excellent'; status = '🌟 Top tier'; }
+  else if (sc >= 650) { band = 'Good'; status = '📈 Growing strong'; }
+  else if (sc >= 550) { band = 'Fair'; status = '🌱 Room to grow'; }
+  else { band = 'Building'; status = '💪 Just starting'; }
+  const bandEl = document.getElementById('scoreBandV2');
+  const statusEl = document.getElementById('scoreStatusV2');
+  if (bandEl) bandEl.textContent = band;
+  if (statusEl) statusEl.textContent = status;
+  const q8 = S2.scores.q8 || 1, q7 = S2.scores.q7 || 1, q5 = S2.scores.q5 || 1, q10 = S2.scores.q10 || 1;
+  const factorsData = [
+    { icon: '⏰', text: 'Bill payment history', badge: q8 >= 4 ? 'Good' : q8 >= 2 ? 'Fair' : 'Needs work', cls: q8 >= 4 ? 'badge-good' : q8 >= 2 ? 'badge-ok' : 'badge-improve' },
+    { icon: '💳', text: 'Credit usage experience', badge: q7 >= 3 ? 'Good' : 'Build more', cls: q7 >= 3 ? 'badge-good' : 'badge-ok' },
+    { icon: '💰', text: 'Income level', badge: q5 >= 3 ? 'Stable' : 'Growing', cls: q5 >= 3 ? 'badge-good' : 'badge-ok' },
+    { icon: '📲', text: 'Digital finance habits', badge: q10 >= 4 ? 'Active' : 'Beginner', cls: q10 >= 4 ? 'badge-good' : 'badge-ok' },
+  ];
+  const factorsEl = document.getElementById('factorsV2');
+  if (factorsEl) factorsEl.innerHTML = factorsData.map(f => `
     <div class="factor-row">
       <span class="factor-icon">${f.icon}</span>
       <span class="factor-text">${f.text}</span>
