@@ -705,7 +705,7 @@
   </div>
 
   <!-- ===== QUIZ 1: SCREEN START ===== -->
-  <div class="screen has-footer quiz1" id="screen-start" style="display:none;">
+  <div class="screen has-footer quiz1" id="screen-start">
     <div class="screen-content">
       <div class="start-hero">
         <div class="start-badge">⚡ Takes only 60 seconds</div>
@@ -1448,7 +1448,7 @@
     </div>
     <div class="screen-footer" id="phoneFooterV2">
       <div class="footer-btn-phone"><button class="btn" id="btnPhoneV2" disabled onclick="sendOTPV2()">Send verification code →</button></div>
-      <div class="footer-btn-otp" style="display:none;"><button class="btn" id="btnOTPV2" disabled onclick="verifyOTPV2()">Show my score →</button></div>
+      <div class="footer-btn-otp"><button class="btn" id="btnOTPV2" disabled onclick="verifyOTPV2()">Show my score →</button></div>
     </div>
   </div>
 
@@ -1541,9 +1541,12 @@ function updateProgress(screen) {
 function show(id) {
   document.getElementById('app').classList.remove('show-home');
   document.querySelectorAll('.quiz2').forEach(s => s.style.display = 'none');
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = '';
+  });
   const el = document.getElementById('screen-' + id);
-  if (el) { el.style.display = 'flex'; el.classList.add('active'); }
+  if (el) el.classList.add('active');
   updateProgress(id);
   state.currentScreen = id;
 }
@@ -1551,9 +1554,13 @@ function show(id) {
 function startQuiz1() {
   document.getElementById('app').classList.remove('show-home');
   document.getElementById('app').classList.remove('quiz2-active');
-  document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); if (s.classList.contains('quiz2')) s.style.display = 'none'; });
+  document.querySelectorAll('.screen').forEach(s => {
+    s.classList.remove('active');
+    s.style.display = '';
+    if (s.classList.contains('quiz2')) s.style.display = 'none';
+  });
   const start = document.getElementById('screen-start');
-  if (start) { start.style.display = 'flex'; start.classList.add('active'); }
+  if (start) start.classList.add('active');
   updateProgress('start');
   state.currentScreen = 'start';
   state.history = [];
